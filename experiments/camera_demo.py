@@ -4,10 +4,10 @@ import numpy as np
 import torch
 from torch.autograd import Variable
 
-from net.msg_net_v2 import Net
+from net import Net
 from option import Options
-from myutils import utils
-from myutils.StyleLoader import StyleLoader
+import utils
+from utils import StyleLoader
 
 def run_demo(args, mirror=False):
 	style_model = Net(ngf=args.ngf)
@@ -43,21 +43,21 @@ def run_demo(args, mirror=False):
 		# changing style 
 		if idx%20 == 1:
 			style_v = style_loader.get(int(idx/20))
-			style_v = Variable(style_v.data, volatile=True)
+			style_v = Variable(style_v.data)
 			style_model.setTarget(style_v)
 
 		img=torch.from_numpy(img).unsqueeze(0).float()
 		if args.cuda:
 			img=img.cuda()
 
-		img = Variable(img, volatile=True)
+		img = Variable(img)
 		img = style_model(img)
 
 		if args.cuda:
 			simg = style_v.cpu().data[0].numpy()
 			img = img.cpu().clamp(0, 255).data[0].numpy()
 		else:
-			simg = style_v.data[0].numpy()
+			simg = style_v.data().numpy()
 			img = img.clamp(0, 255).data[0].numpy()
 		img = img.transpose(1, 2, 0).astype('uint8')
 		simg = simg.transpose(1, 2, 0).astype('uint8')
